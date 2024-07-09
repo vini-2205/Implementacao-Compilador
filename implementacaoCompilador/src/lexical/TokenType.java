@@ -5,10 +5,8 @@ public enum TokenType {
     UNEXPECTED_EOF,
     INVALID_TOKEN,
     END_OF_FILE,
-
     // SYMBOLS
     COMMA,         // ,
-    COLON,         // :
     SEMICOLON,     // ;
     OPEN_PAR,      // (
     CLOSE_PAR,     // )
@@ -51,5 +49,4 @@ public enum TokenType {
     NAME,          // identifier
     NUMBER,        // real or integer 
     COMMENT,       // %
-    
 };

@@ -9,22 +9,22 @@ public class LexicalAnalysis implements AutoCloseable {
     private SymbolTable st;
     private PushbackInputStream input;
 
-    public LexicalAnalysis(String filename) {
+    public LexicalAnalysis(String filename) throws Exception {
         try {
             input = new PushbackInputStream(new FileInputStream(filename), 2);
         } catch (Exception e) {
-            // throw new LexicalException("Unable to open file");
+            throw new Exception("Unable to open file");
         }
 
         st = new SymbolTable();
         line = 1;
     }
 
-    public void close() {
+    public void close() throws Exception {
         try {
             input.close();
         } catch (Exception e) {
-            // throw new LexicalException("Unable to close file");
+            throw new Exception("Unable to close file");
         }
     }
 
@@ -40,6 +40,94 @@ public class LexicalAnalysis implements AutoCloseable {
             int c = getc();
             // System.out.printf("  [%02d, %03d ('%c')]\n",
             //     state, c, (char) c);
+        
+            switch (state) {
+                case 1:
+                    if (Character.isLetter(c) || c == '_') {
+                        state = 2;
+                    } else if (Character.isDigit(c)) {
+                        state = 3;
+                    } else if (c == '<' || c == '>' || c == '!') {
+                        state = 4;
+                    } else if (c == ':') {
+                        state = 5;
+                    } else if (c == '|') {
+                        state = 6;
+                    } else if (c == '&') {
+                        state = 7;
+                    } else if (c == '%') {
+                        state = 10;
+                    } else if (c == ';' || c == ',' || c == '{' || c == '}' || c == '=' || c == '+' || c == '-' || c == '*' || c == '/' ) {
+                        state = 11;
+                    }
+                    break;
+                // continuar daqui
+                case 2:
+                    if (Character.isLetter(c) || Character.isDigit(c)) {
+                        state = 2;
+                    } else {
+                        state = 12; // Estado de rejeição (unget)
+                    }
+                    break;
+                case 3:
+                    if (Character.isDigit(c)) {
+                        state = 3;
+                    } else if (c == '.') {
+                        state = 9;
+                    } else {
+                        state = 12; // Estado de rejeição (unget)
+                    }
+                    break;
+                case 4:
+                    state = 11; // Aceitação direta
+                    break;
+                case 5:
+                    if (c == '=') {
+                        state = 11; // Aceitação
+                    } else {
+                        state = 12; // Estado de rejeição (unget)
+                    }
+                    break;
+                case 6:
+                    if (c == '=') {
+                        state = 11; // Aceitação
+                    } else {
+                        state = 12; // Estado de rejeição (unget)
+                    }
+                    break;
+                case 7:
+                    state = 11; // Aceitação
+                    break;
+                case 8:
+                    if (Character.isDigit(c)) {
+                        state = 9;
+                    } else {
+                        state = 12; // Estado de rejeição (unget)
+                    }
+                    break;
+                case 9:
+                    if (Character.isDigit(c)) {
+                        state = 9;
+                    } else {
+                        state = 12; // Estado de rejeição (unget)
+                    }
+                    break;
+                case 10:
+                    state = 11; // Aceitação
+                    break;
+                default:
+                    state = 12; // Estado de rejeição (unget)
+                    break;
+    
+                // Verifica se atingiu um estado de aceitação ou rejeição
+                if (state == 11) {
+                    System.out.println("Aceito: " + c);
+                    state = 1; // Reinicia o estado
+                } else if (state == 12) {
+                    System.out.println("Rejeitado: " + c);
+                    state = 1; // Reinicia o estado
+                }
+            }
 
             switch (state) {
                 case 1:
@@ -240,20 +328,20 @@ public class LexicalAnalysis implements AutoCloseable {
         return lex;
     }
 
-    private int getc() {
+    private int getc() throws Exception {
         try {
             return input.read();
         } catch (Exception e) {
-            // throw new LexicalException("Unable to read file");
+            throw new Exception("Unable to read file");
         }
     }
 
-    private void ungetc(int c) {
+    private void ungetc(int c) throws Exception {
         if (c != -1) {
             try {
                 input.unread(c);
             } catch (Exception e) {
-                // throw new LexicalException("Unable to ungetc");
+                throw new Exception("Unable to ungetc");
             }
         }
     }

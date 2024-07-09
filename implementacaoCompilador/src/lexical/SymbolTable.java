@@ -57,6 +57,6 @@ public class SymbolTable {
     }
 
     public TokenType find(String token) {
-        return this.contains(token) ? st.get(token) : TokenType.NAME;
+        return this.contains(token) ? st.get(token) : TokenType.NAME; // Ternário
     }
 }
