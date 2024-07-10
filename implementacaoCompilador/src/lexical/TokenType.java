@@ -10,8 +10,6 @@ public enum TokenType {
     SEMICOLON,     // ;
     OPEN_PAR,      // (
     CLOSE_PAR,     // )
-    OPEN_CUR,      // {
-    CLOSE_CUR,     // }
 
     // OPERATORS
     ASSIGN,        // :=
@@ -47,6 +45,7 @@ public enum TokenType {
     
     // OTHERS
     NAME,          // identifier
-    NUMBER,        // real or integer 
-    COMMENT,       // %
+    TEXT,          // string
+    REAL_NUMBER,   // real number
+    INT_NUMBER    // integer number
 };

@@ -15,9 +15,6 @@ public class SymbolTable {
         st.put(",", TokenType.COMMA);
         st.put("(", TokenType.OPEN_PAR);
         st.put(")", TokenType.CLOSE_PAR);
-        st.put("{", TokenType.OPEN_CUR);
-        st.put("}", TokenType.CLOSE_CUR);
-        st.put("%", TokenType.COMMENT);
 
         // OPERATORS
         st.put(":=", TokenType.ASSIGN);

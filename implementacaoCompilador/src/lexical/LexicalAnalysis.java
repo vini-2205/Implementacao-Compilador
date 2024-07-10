@@ -32,298 +32,163 @@ public class LexicalAnalysis implements AutoCloseable {
         return this.line;
     }
 
-    public Lexeme nextToken() {
+    public Lexeme nextToken() throws Exception {
         Lexeme lex = new Lexeme("", TokenType.END_OF_FILE);
 
         int state = 1;
-        while (state != 15 && state != 16) {
+        while (state != 12 && state != 13) {
             int c = getc();
             // System.out.printf("  [%02d, %03d ('%c')]\n",
             //     state, c, (char) c);
         
             switch (state) {
                 case 1:
-                    if (Character.isLetter(c) || c == '_') {
-                        state = 2;
-                    } else if (Character.isDigit(c)) {
-                        state = 3;
-                    } else if (c == '<' || c == '>' || c == '!') {
-                        state = 4;
-                    } else if (c == ':') {
-                        state = 5;
-                    } else if (c == '|') {
-                        state = 6;
-                    } else if (c == '&') {
-                        state = 7;
-                    } else if (c == '%') {
-                        state = 10;
-                    } else if (c == ';' || c == ',' || c == '{' || c == '}' || c == '=' || c == '+' || c == '-' || c == '*' || c == '/' ) {
-                        state = 11;
-                    }
-                    break;
-                // continuar daqui
-                case 2:
-                    if (Character.isLetter(c) || Character.isDigit(c)) {
-                        state = 2;
-                    } else {
-                        state = 12; // Estado de rejeição (unget)
-                    }
-                    break;
-                case 3:
-                    if (Character.isDigit(c)) {
-                        state = 3;
-                    } else if (c == '.') {
-                        state = 9;
-                    } else {
-                        state = 12; // Estado de rejeição (unget)
-                    }
-                    break;
-                case 4:
-                    state = 11; // Aceitação direta
-                    break;
-                case 5:
-                    if (c == '=') {
-                        state = 11; // Aceitação
-                    } else {
-                        state = 12; // Estado de rejeição (unget)
-                    }
-                    break;
-                case 6:
-                    if (c == '=') {
-                        state = 11; // Aceitação
-                    } else {
-                        state = 12; // Estado de rejeição (unget)
-                    }
-                    break;
-                case 7:
-                    state = 11; // Aceitação
-                    break;
-                case 8:
-                    if (Character.isDigit(c)) {
-                        state = 9;
-                    } else {
-                        state = 12; // Estado de rejeição (unget)
-                    }
-                    break;
-                case 9:
-                    if (Character.isDigit(c)) {
-                        state = 9;
-                    } else {
-                        state = 12; // Estado de rejeição (unget)
-                    }
-                    break;
-                case 10:
-                    state = 11; // Aceitação
-                    break;
-                default:
-                    state = 12; // Estado de rejeição (unget)
-                    break;
-    
-                // Verifica se atingiu um estado de aceitação ou rejeição
-                if (state == 11) {
-                    System.out.println("Aceito: " + c);
-                    state = 1; // Reinicia o estado
-                } else if (state == 12) {
-                    System.out.println("Rejeitado: " + c);
-                    state = 1; // Reinicia o estado
-                }
-            }
-
-            switch (state) {
-                case 1:
                     if (c == ' ' || c == '\t' || c == '\r') {
                         state = 1;
                     } else if (c == '\n') {
                         this.line++;
-                    } else if (c == '/') {
-                        //lex.token += (char) c;
+                    } else if (Character.isLetter(c) || c == '_') {
+                        lex.token += (char) c;
                         state = 2;
-                    } else if (c == '=' || c == '!' || c == '<' || c == '>') {
-                        lex.token += (char) c;
-                        state = 4;
-                    } else if (c == '+') {
-                        lex.token += (char) c;
-                        state = 5;
-                    } else if (c == '-') {
-                        lex.token += (char) c;
-                        state = 6;
-                    } else if (c == '?') {
-                        lex.token += (char) c;
-                        state = 7;
-                    } else if (c == ',' || c == ':' || c == ';' ||
-                        c == '(' || c == ')' || c == '{' || c == '}' ||
-                        c == '[' || c == ']' || c == '*' || c == '%') {
-                        lex.token += (char) c;
-                        state = 15;
-                    } else if (c == '.') {
-                        lex.token += (char) c;
-                        state = 8;
-                    } else if (c == '&') {
-                        lex.token += (char) c;
-                        state = 10;
-                    } else if (c == '|') {
-                        lex.token += (char) c;
-                        state = 11;
-                    } else if (c == '_' || c == '$' ||
-                        Character.isLetter(c)) {
-                        lex.token += (char) c;
-                        state = 12;
                     } else if (Character.isDigit(c)) {
                         lex.token += (char) c;
-                        state = 13;
-                    } else if (c == '\'') {
-                        state = 14;
+                        state = 3;
+                    } else if (c == '<' || c == '>' || c == '!') {
+                        lex.token += (char) c;
+                        state = 4;
+                    } else if (c == ':') {
+                        lex.token += (char) c;
+                        state = 5;
+                    } else if (c == '|') {
+                        lex.token += (char) c;
+                        state = 6;
+                    } else if (c == '&') {
+                        lex.token += (char) c;
+                        state = 7;
+                    } else if (c == '%') {
+                        state = 10;
+                    } else if (c == '{') {
+                        state = 11;
+                    } else if (c == ';' || c == ',' || c == '=' || c == '+' || c == '-' || c == '*' || c == '/' || c == '(' || c == ')') {
+                        lex.token += (char) c;
+                        state = 12;
                     } else if (c == -1) {
                         lex.type = TokenType.END_OF_FILE;
-                        state = 16;
+                        state = 13;
                     } else {
                         lex.token += (char) c;
                         lex.type = TokenType.INVALID_TOKEN;
-                        state = 16;
+                        state = 13;
                     }
                     break;
                 case 2:
-                    if(c == '/'){
-                        state = 3;
-                    }
-                    else{
+                    if  (c == '_' || Character.isLetter(c) || Character.isDigit(c)) {
+                        lex.token += (char) c;
+                        state = 2;
+                    } else {
                         ungetc(c);
-                        lex.token += '/';
-                        state = 15;
+                        state = 12;
                     }
                     break;
                 case 3:
-                    if (c == '\n'){
-                        this.line++;
-                        state = 1;
-                    } else if (c == -1) {
-                        lex.type = TokenType.END_OF_FILE;
-                        state = 16;
-                    } else{
+                    if(Character.isDigit(c)){
+                        lex.token += (char) c;
                         state = 3;
-                    } 
-                    
+                    } else if(c == '.'){
+                        lex.token += (char) c;
+                        state = 8; 
+                    }else{
+                        ungetc(c);
+                        lex.type = TokenType.INT_NUMBER;
+                        state = 13;
+                    }          
                     break;
                 case 4:
                     if (c == '=') {
                         lex.token += (char) c;
-                        state = 15;
-                    } else {
-                        ungetc(c);
-                        state = 15;
-                    }
-
-                    break;
-                case 5:
-                    if (c == '+') {
-                        lex.token += (char) c;
-                        state = 15;
-                    } else {
-                       ungetc(c);
-                       state = 15; 
-                    }
-
-                    break;
-                case 6:
-                    if(c == '-'){
-                        lex.token += (char) c;
-                        state = 15;
-                    }
-                    else{
-                        ungetc(c);
-                        state = 15;
-                    }
-                    break;
-                case 7:
-                    if(c == '?'){
-                        lex.token += (char) c;
-                        state = 15;
-                    }
-                    else{
-                        ungetc(c);
-                        state = 15;
-                    }
-                    break;
-                case 8:
-                    if(c == '.'){
-                        lex.token += (char) c;
-                        state = 9;
-                    }
-                    else{
-                        lex.type = TokenType.INVALID_TOKEN;
-                        state = 16;
-                    }
-                    break;
-                case 9:
-                    if(c == '.'){
-                        lex.token += (char) c;
-                        state = 15;
-                    }
-                    else{
-                        lex.type = TokenType.INVALID_TOKEN;
-                        state = 16;
-                    }
-                    break;
-                case 10:
-                    if (c == '&') {
-                        lex.token += (char) c;
-                        state = 15;
-                    } else {
-                        lex.type = TokenType.INVALID_TOKEN;
-                        state = 16;
-                    }
-
-                    break;
-                case 11:
-                    if(c == '|'){
-                        lex.token += (char) c;
-                        state = 15;
-                    }
-                    else{
-                        lex.type = TokenType.INVALID_TOKEN;
-                        state = 16;
-                    }
-                    break;
-                case 12:
-                    if (c == '_' || c == '$' ||
-                        Character.isLetter(c) ||
-                        Character.isDigit(c)) {
-                        lex.token += (char) c;
                         state = 12;
                     } else {
                         ungetc(c);
-                        state = 15;
+                        state = 12;
                     }
-
                     break;
-                case 13:
-                    if(Character.isDigit(c)){
+                case 5:
+                    if (c == '=') {
                         lex.token += (char) c;
+                        state = 12;
+                    } else {
+                        lex.token += (char) c;
+                        lex.type = TokenType.INVALID_TOKEN;
+                        state = 13;
+                    }          
+                    break;
+                case 6:
+                    if (c == '|') {
+                        lex.token += (char) c;
+                        state = 12;
+                    } else {
+                        lex.token += (char) c;
+                        lex.type = TokenType.INVALID_TOKEN;
                         state = 13;
                     }
-                    else{
-                        ungetc(c);
-                        lex.type = TokenType.NUMBER;
-                        state = 16;
+                    break;
+                case 7:
+                    if (c == '&') {
+                        lex.token += (char) c;
+                        state = 12;
+                    } else {
+                        lex.token += (char) c;
+                        lex.type = TokenType.INVALID_TOKEN;
+                        state = 12;
+                    }                   
+                    break;
+                case 8:
+                    if (Character.isDigit(c)) {
+                        lex.token += (char) c;
+                        state = 9;
+                    } else {
+                        lex.token += (char) c;
+                        lex.type = TokenType.INVALID_TOKEN;
+                        state = 13;
                     }
                     break;
-                case 14:
-                    if(c == '\''){
-                        lex.type = TokenType.TEXT;        
-                        state = 16;
-                    }
-                    else{
+                case 9:
+                    if (Character.isDigit(c)) {
                         lex.token += (char) c;
-                        state = 14;
+                        state = 9;
+                    } else {
+                        ungetc(c);
+                        lex.type = TokenType.REAL_NUMBER;
+                        state = 13;
+                    }
+                    break;
+                case 10:
+                    if (c == '\n') {
+                        this.line++;
+                        state = 1;
+                    } else if (c == -1) {
+                        lex.type = TokenType.END_OF_FILE;
+                        state = 13;
+                    } else {
+                        state = 10;
+                    }
+                    break;
+                case 11:
+                    if (c == '}') {
+                        lex.type = TokenType.TEXT;
+                        state = 13;
+                    } else {
+                        lex.token += (char) c;
+                        state = 11;
                     }
                     break;
                 default:
-                    // throw new LexicalException("Unreachable");
+                    throw new Exception("Unreachable");
             }
         }
-
-        if (state == 15)
+        if (state == 12) {
             lex.type = st.find(lex.token);
+        }
 
         return lex;
     }
