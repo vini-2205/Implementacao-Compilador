@@ -13,7 +13,7 @@ public class LexicalAnalysis implements AutoCloseable {
         try {
             input = new PushbackInputStream(new FileInputStream(filename), 2);
         } catch (Exception e) {
-            throw new Exception("Unable to open file");
+            throw new Exception("Não foi possível abrir o arquivo");
         }
 
         st = new SymbolTable();
@@ -24,7 +24,7 @@ public class LexicalAnalysis implements AutoCloseable {
         try {
             input.close();
         } catch (Exception e) {
-            throw new Exception("Unable to close file");
+            throw new Exception("Não foi possível fechar o arquivo");
         }
     }
 
@@ -38,8 +38,6 @@ public class LexicalAnalysis implements AutoCloseable {
         int state = 1;
         while (state != 12 && state != 13) {
             int c = getc();
-            // System.out.printf("  [%02d, %03d ('%c')]\n",
-            //     state, c, (char) c);
         
             switch (state) {
                 case 1:
@@ -174,16 +172,22 @@ public class LexicalAnalysis implements AutoCloseable {
                     }
                     break;
                 case 11:
-                    if (c == '}') {
+                    if (c == '}') { 
                         lex.type = TokenType.TEXT;
                         state = 13;
+                    } else if (c == -1) {
+                        lex.type = TokenType.INVALID_TOKEN;
+                        state = 13;
                     } else {
+                        if (c == '\n'){
+                            this.line++;
+                        }
                         lex.token += (char) c;
                         state = 11;
                     }
                     break;
                 default:
-                    throw new Exception("Unreachable");
+                    throw new Exception("Ocorreu um erro inesperado");
             }
         }
         if (state == 12) {
@@ -197,7 +201,7 @@ public class LexicalAnalysis implements AutoCloseable {
         try {
             return input.read();
         } catch (Exception e) {
-            throw new Exception("Unable to read file");
+            throw new Exception("Não foi possível ler o arquivo");
         }
     }
 
@@ -206,7 +210,7 @@ public class LexicalAnalysis implements AutoCloseable {
             try {
                 input.unread(c);
             } catch (Exception e) {
-                throw new Exception("Unable to ungetc");
+                throw new Exception("Não foi possível executar (ungetc)");
             }
         }
     }
