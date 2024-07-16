@@ -5,7 +5,7 @@ public class Main {
         StringBuilder output = new StringBuilder();
         boolean error = false;
         
-        try (LexicalAnalysis l = new LexicalAnalysis("implementacaoCompilador/src/file.txt")) {
+        try (LexicalAnalysis l = new LexicalAnalysis("implementacaoCompilador/testes/teste_8.txt")) {
             Lexeme lex;
             do {
                 lex = l.nextToken();
@@ -20,6 +20,7 @@ public class Main {
             if (error) {
                 System.out.println("Caracter desconhecido: " + lex.token + " (linha " + l.getLine() + ")");
             } else {
+                System.out.println(output);
                 l.getSt().printSymbolTable();
             }
 

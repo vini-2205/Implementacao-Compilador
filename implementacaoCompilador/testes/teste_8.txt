@@ -1,0 +1,32 @@
+app teste8
+var
+  integer i, j, n;
+  real sum;
+init
+  sum := 0;
+  n := 5;
+
+  % Leia um número inteiro
+  read(n);
+
+  % Laço externo
+  repeat
+    i := n;
+    % Laço interno
+    repeat
+      sum := sum + i;
+      i := i - 1;
+    until (i = 0);
+    n := n - 1;
+  until (n = 0);
+
+  % Verifique se a soma é par ou ímpar
+  if ((sum % 2) = 0) then
+    write({Soma é par});
+  else
+    write({Soma é ímpar});
+  end;
+
+  write(sum);
+
+return

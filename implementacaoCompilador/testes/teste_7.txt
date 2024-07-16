@@ -1,0 +1,29 @@
+app teste7
+var
+  integer x, y;
+  real z;
+init
+  % Leia dois números inteiros e um número real
+  read(x);
+  read(y);
+  read(z);
+
+  % Calcule a soma e o produto dos inteiros
+  x := x + y;
+  y := x * y;
+
+  % Verifique se a soma é maior que o produto
+  if (x > y) then
+    write({Soma é maior que produto});
+  else
+    write({Produto é maior ou igual a soma});
+  end;
+
+  % Operações lógicas
+  if ((x > 0) && (y > 0)) then
+    write({Ambos positivos});
+  else
+    write({Um ou ambos negativos});
+  end;
+
+return
