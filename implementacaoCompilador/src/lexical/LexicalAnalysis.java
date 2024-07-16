@@ -176,8 +176,7 @@ public class LexicalAnalysis implements AutoCloseable {
                         lex.type = TokenType.TEXT;
                         state = 13;
                     } else if (c == -1) {
-                        lex.type = TokenType.INVALID_TOKEN;
-                        state = 13;
+                        throw new Exception(String.format("String má formada (linha %02d)", this.line));
                     } else {
                         if (c == '\n'){
                             this.line++;
@@ -195,6 +194,10 @@ public class LexicalAnalysis implements AutoCloseable {
         }
 
         return lex;
+    }
+
+    public SymbolTable getSt() {
+        return this.st;
     }
 
     private int getc() throws Exception {
