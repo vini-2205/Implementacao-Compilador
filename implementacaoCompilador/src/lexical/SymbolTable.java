@@ -6,9 +6,13 @@ import java.util.Map;
 public class SymbolTable {
 
     private Map<String, TokenType> st;
+    private Map<String, Integer> ids;
+    private Integer idNumber;
 
     public SymbolTable() {
         st = new HashMap<String, TokenType>();
+        ids = new HashMap<String, Integer>();
+        idNumber = 0;
 
         // SYMBOLS
         st.put(";", TokenType.SEMICOLON);
@@ -54,6 +58,30 @@ public class SymbolTable {
     }
 
     public TokenType find(String token) {
-        return this.contains(token) ? st.get(token) : TokenType.NAME; // Ternário
+        if (this.contains(token)){
+            return st.get(token);
+        } else {
+            this.addId(token);
+            return TokenType.NAME;
+        }
+    }
+
+    private void addId(String token) {
+        if (!ids.containsKey(token)) {
+            ids.put(token, idNumber);
+            idNumber++;
+        }
+    }
+
+    public void printSymbolTable() {
+        System.out.println("Symbol Table:");
+        for (Map.Entry<String, TokenType> entry : st.entrySet()) {
+            System.out.println(entry.getKey() + " -> " + entry.getValue());
+        }
+
+        System.out.println("\nIdentifiers:");
+        for (Map.Entry<String, Integer> entry : ids.entrySet()) {
+            System.out.println(entry.getKey() + " -> " + entry.getValue());
+        }
     }
 }
