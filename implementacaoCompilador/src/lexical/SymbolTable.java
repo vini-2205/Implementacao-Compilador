@@ -74,12 +74,7 @@ public class SymbolTable {
     }
 
     public void printSymbolTable() {
-        System.out.println("Symbol Table:");
-        for (Map.Entry<String, TokenType> entry : st.entrySet()) {
-            System.out.println(entry.getKey() + " -> " + entry.getValue());
-        }
-
-        System.out.println("\nIdentifiers:");
+        System.out.println("Identifiers:");
         for (Map.Entry<String, Integer> entry : ids.entrySet()) {
             System.out.println(entry.getKey() + " -> " + entry.getValue());
         }

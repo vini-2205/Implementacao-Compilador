@@ -1,6 +1,6 @@
 app teste1
 var
- int a, b, c;
+ integer a, b, c;
  real result
 init
  read (a);

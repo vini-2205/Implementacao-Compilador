@@ -9,22 +9,22 @@ public class LexicalAnalysis implements AutoCloseable {
     private SymbolTable st;
     private PushbackInputStream input;
 
-    public LexicalAnalysis(String filename) throws Exception {
+    public LexicalAnalysis(String filename) {
         try {
             input = new PushbackInputStream(new FileInputStream(filename), 2);
         } catch (Exception e) {
-            throw new Exception("Não foi possível abrir o arquivo");
+            throw new LexicalError("Não foi possível abrir o arquivo");
         }
 
         st = new SymbolTable();
         line = 1;
     }
 
-    public void close() throws Exception {
+    public void close() {
         try {
             input.close();
         } catch (Exception e) {
-            throw new Exception("Não foi possível fechar o arquivo");
+            throw new LexicalError("Não foi possível fechar o arquivo");
         }
     }
 
@@ -32,7 +32,7 @@ public class LexicalAnalysis implements AutoCloseable {
         return this.line;
     }
 
-    public Lexeme nextToken() throws Exception {
+    public Lexeme nextToken() {
         Lexeme lex = new Lexeme("", TokenType.END_OF_FILE);
 
         int state = 1;
@@ -176,7 +176,7 @@ public class LexicalAnalysis implements AutoCloseable {
                         lex.type = TokenType.TEXT;
                         state = 13;
                     } else if (c == -1) {
-                        throw new Exception(String.format("String má formada (linha %02d)", this.line));
+                        throw new LexicalError(String.format("String má formada (linha %02d)", this.line));
                     } else {
                         if (c == '\n'){
                             this.line++;
@@ -186,7 +186,7 @@ public class LexicalAnalysis implements AutoCloseable {
                     }
                     break;
                 default:
-                    throw new Exception("Ocorreu um erro inesperado");
+                    throw new LexicalError("Ocorreu um erro inesperado");
             }
         }
         if (state == 12) {
@@ -200,20 +200,20 @@ public class LexicalAnalysis implements AutoCloseable {
         return this.st;
     }
 
-    private int getc() throws Exception {
+    private int getc() {
         try {
             return input.read();
         } catch (Exception e) {
-            throw new Exception("Não foi possível ler o arquivo");
+            throw new LexicalError("Não foi possível ler o arquivo");
         }
     }
 
-    private void ungetc(int c) throws Exception {
+    private void ungetc(int c) {
         if (c != -1) {
             try {
                 input.unread(c);
             } catch (Exception e) {
-                throw new Exception("Não foi possível executar (ungetc)");
+                throw new LexicalError("Não foi possível executar (ungetc)");
             }
         }
     }
