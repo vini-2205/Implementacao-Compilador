@@ -23,7 +23,7 @@ public class Main {
             //         error = true;
             //         break;
             //     }
-            //     output.append(String.format("%02d: (\"%syntatic\", %syntatic)\n", lexical.getLine(), lex.token, lex.type));
+            //     output.append(String.format("%02d: (\"%s\", %s)\n", lexical.getLine(), lex.token, lex.type));
             // } while (lex.type != TokenType.END_OF_FILE);
 
 

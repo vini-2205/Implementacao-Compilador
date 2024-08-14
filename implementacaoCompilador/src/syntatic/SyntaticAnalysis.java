@@ -22,7 +22,7 @@ public class SyntaticAnalysis {
     }
 
     public void start() {
-        procProgram();
+        program();
         eat(TokenType.END_OF_FILE);
     }
 
@@ -62,59 +62,86 @@ public class SyntaticAnalysis {
     }
 
     // program ::= app identifier body
-    private void procProgram() {
+    private void program() {
         System.out.println("program");
         eat(TokenType.APP);
         eat(TokenType.NAME);
-        procBody();
+        body();
     }
 
-    // body ::= [ var decl-list] init stmt-list return
-    private void procBody() {
+    // body ::= var decl-list init stmt-list return | init stmt-list return 
+    private void body() {
         System.out.println("body");
         if (current.type == TokenType.VAR) {
             advance();
-            procDeclList();
+            declList();
         }
         eat(TokenType.INIT);
-        procStmtList();
+        stmtList();
         eat(TokenType.RETURN);
     }
 
-    // decl-list ::= decl {";" decl}
-    private void procDeclList() {
+    // decl-list ::= decl decl-tail
+    private void declList() {
         System.out.println("decl-list");
-        procDecl();
-        while (current.type == TokenType.SEMICOLON) {
-            advance();
-            procDecl();
+        decl();
+        declTail();
+    }
+
+    // decl-tail ::= “;” decl decl-tail | lambda 
+    private void declTail() {
+        System.out.println("decl-tail");
+        switch (current.type) {
+            case SEMICOLON:
+                advance();
+                decl();
+                declTail();
+                break;
+            case INIT:
+                break;
+            default:
+                showError();
+                break;
         }
     }
 
     // decl ::= type ident-list
-    private void procDecl() {
+    private void decl() {
         System.out.println("decl");
-        procType();
-        procIdentList();
+        type();
+        identList();
     }
 
-    // ident-list ::= identifier {"," identifier}
-    private void procIdentList() {
+    // ident-list ::= identifier ident-tail 
+    private void identList() {
         System.out.println("ident-list");
         eat(TokenType.NAME);
-        while (current.type == TokenType.COMMA) {
-            advance();
-            eat(TokenType.NAME);
+        identTail();
+    }
+
+    // ident-tail ::= "," identifier ident-tail | lambda 
+    private void identTail() {
+        System.out.println("ident-tail");
+        switch (current.type) {
+            case COMMA:
+                advance();
+                eat(TokenType.NAME);
+                identTail();
+                break;
+            case INIT:
+            case SEMICOLON:
+                break;
+            default:
+                showError();
+                break;
         }
     }
 
     // type ::= integer | real
-    private void procType() {
+    private void type() {
         System.out.println("type");
         switch (current.type) {
             case INTEGER:
-                advance();
-                break;
             case REAL:
                 advance();
                 break;
@@ -123,34 +150,51 @@ public class SyntaticAnalysis {
         }
     }
 
-    // stmt-list ::= stmt {";" stmt}
-    private void procStmtList() {
+    // stmt-list ::= stmt stmt-tail
+    private void stmtList() {
         System.out.println("stmt-list");
-        procStmt();
-        while (current.type == TokenType.SEMICOLON) {
-            advance();
-            procStmt();
+        stmt();
+        stmtTail();
+    }
+
+    // stmt-tail ::= ";" stmt stmt-tail | lambda 
+    private void stmtTail() {
+        System.out.println("stmtTail");
+        switch (current.type) {
+            case SEMICOLON:
+                advance();
+                stmt();
+                stmtTail();
+                break;
+            case RETURN:
+            case END:
+            case ELSE:
+            case UNTIL:
+                break;
+            default:
+                showError();
+                break;
         }
     }
 
     // stmt ::= assign-stmt | if-stmt | repeat-stmt | read-stmt | write-stmt
-    private void procStmt() {
+    private void stmt() {
         System.out.println("stmt");
         switch (current.type) {
             case NAME:
-                procAssignStmt();
+                assignStmt();
                 break;
             case IF:
-                procIfStmt();
+                ifStmt();
                 break;
             case REPEAT:
-                procRepeatStmt();
+                repeatStmt();
                 break;
             case READ:
-                procReadStmt();
+                readStmt();
                 break;
             case WRITE:
-                procWriteStmt();
+                writeStmt();
                 break;
             default:
                 showError();
@@ -159,46 +203,50 @@ public class SyntaticAnalysis {
 
 
     // assign-stmt ::= identifier ":=" simple_expr
-    private void procAssignStmt() {
+    private void assignStmt() {
         System.out.println("assign-stmt");
         eat(TokenType.NAME);
         eat(TokenType.ASSIGN);
-        procSimpleExpr();
+        simpleExpr();
     }
 
-    // if-stmt ::= if condition then stmt-list end | if condition then stmt-list else stmt-list end
-    private void procIfStmt() {
+    // if-stmt ::= if condition then stmt-list if-tail
+    private void ifStmt() {
         System.out.println("if-stmt");
         eat(TokenType.IF);
-        procCondition();
+        condition();
         eat(TokenType.THEN);
-        procStmtList();
+        stmtList();
+        ifTail();
+    }
 
+    // if-tail ::= end | else stmt-list end
+    private void ifTail() {
+        System.out.println("if-tail");
         if (current.type == TokenType.ELSE) {
             advance();
-            procStmtList();
+            stmtList();
         }
-
         eat(TokenType.END);
     }
 
     // repeat-stmt ::= repeat stmt-list stmt-suffix
-    private void procRepeatStmt() {
+    private void repeatStmt() {
         System.out.println("repeat-stmt");
         eat(TokenType.REPEAT);
-        procStmtList();
-        procStmtSuffix();
+        stmtList();
+        stmtSuffix();
     }
 
     // stmt-suffix ::= until condition
-    private void procStmtSuffix() {
+    private void stmtSuffix() {
         System.out.println("stmt-suffix");
         eat(TokenType.UNTIL);
-        procCondition();
+        condition();
     }
 
     // read-stmt ::= read "(" identifier ")"
-    private void procReadStmt() {
+    private void readStmt() {
         System.out.println("rrad-stmt");
         eat(TokenType.READ);
         eat(TokenType.OPEN_PAR);
@@ -207,16 +255,16 @@ public class SyntaticAnalysis {
     }
 
     // write-stmt ::= write "(" writable ")"
-    private void procWriteStmt() {
+    private void writeStmt() {
         System.out.println("write-stmt");
         eat(TokenType.WRITE);
         eat(TokenType.OPEN_PAR);
-        procWritable();
+        writable();
         eat(TokenType.CLOSE_PAR);
     }
 
     // writable ::= simple-expr | literal
-    private void procWritable() {
+    private void writable() {
         System.out.println("writable");
         switch (current.type) {
             case NAME:
@@ -225,27 +273,33 @@ public class SyntaticAnalysis {
             case OPEN_PAR:
             case NOT:
             case SUB:
-                procSimpleExpr();
+                simpleExpr();
                 break;
             case TEXT:
                 advance();
                 break;
             default:
                 showError();
+                break;
         }
     }
 
     // condition ::= expression
-    private void procCondition() {
+    private void condition() {
         System.out.println("proCondition");
-        procExpr();
+        expr();
     }
 
-    // expression ::= simple-expr | simple-expr relop simple-expr
-    private void procExpr() {
+    // expression ::= simple-expr expr-tail
+    private void expr() {
         System.out.println("expression");
-        procSimpleExpr();
+        simpleExpr();
+        exprTail();
+    }
 
+    // expr-tail ::= relop simple-expr | lambda 
+    private void exprTail() {
+        System.out.println("exprTail");
         switch (current.type) {
             case EQUAL:
             case GREATER_THAN:
@@ -253,16 +307,28 @@ public class SyntaticAnalysis {
             case LOWER_THAN:
             case LOWER_EQUAL:
             case NOT_EQUAL:
-                advance();
-                procSimpleExpr();
+                relop();
+                simpleExpr();
+                break;
+            case CLOSE_PAR:
+            case THEN:
+            case RETURN:
+            case SEMICOLON:
+            // case ADD:
+            // case SUB:
+            // case OR:
+            case END:
+            case ELSE:
+            case UNTIL:
                 break;
             default:
+                showError();
                 break;
         }
     }
 
-    // simple-expr ::= term | simple-expr addop term
-    private void procSimpleExpr() {
+    // simple-expr ::= term simple
+    private void simpleExpr() {
         System.out.println("simpleExpr");
         switch (current.type) {
             case NAME:
@@ -271,71 +337,201 @@ public class SyntaticAnalysis {
             case OPEN_PAR:
             case NOT:
             case SUB:
-                procTerm();
+                term();
+                simple();
                 break;
             default:
-                procSimpleExpr();
-                eat(TokenType.ADD);
-                procTerm();
+                showError();
                 break;
         }
     }
 
-    // term ::= factor-a | term mulop factor-a
-    private void procTerm() {
+    // simple ::= addop term simple | lambda
+    private void simple() {
+        System.out.println("simple");
+        switch (current.type) {
+            case ADD:
+            case SUB:
+            case OR:
+                addop();
+                term();
+                simple();
+                break;
+            case CLOSE_PAR:
+            case THEN:
+            case RETURN:
+            case SEMICOLON:
+            case EQUAL:
+            case GREATER_THAN:
+            case GREATER_EQUAL:
+            case LOWER_THAN:
+            case LOWER_EQUAL:
+            case NOT_EQUAL:
+            case END:
+            case ELSE:
+            case UNTIL:
+                break;
+            default:
+                showError();
+                break;
+        }
+    }
+
+    // term ::= factor-a term-tail
+    private void term() {
         System.out.println("term");
         switch (current.type) {
-            case NAME:
-            case INT_NUMBER:
-            case REAL_NUMBER:
-            case OPEN_PAR:
             case NOT:
             case SUB:
-                procFactorA();
+            case NAME:
+            case OPEN_PAR:
+            case INT_NUMBER:
+            case REAL_NUMBER:
+                factorA();
+                termTail();
                 break;
             default:
-                procTerm();
-                eat(TokenType.MUL);
-                procFactorA();
+                showError();
                 break;
         }
     }
 
-    // fator-a ::= factor | "!" factor | "-" factor
-    private void procFactorA() {
+    // term-tail ::= mulop factor-a term-tail | lambda
+    private void termTail() {
+        System.out.println("termTail");
+        switch (current.type) {
+            case MUL:
+            case DIV:
+            case AND:
+                mulop();
+                factorA();
+                termTail();
+                break;
+            case CLOSE_PAR:
+            case THEN:
+            case RETURN:
+            case SEMICOLON:
+            case EQUAL:
+            case GREATER_THAN:
+            case GREATER_EQUAL:
+            case LOWER_THAN:
+            case LOWER_EQUAL:
+            case NOT_EQUAL:
+            case ADD:
+            case SUB:
+            case OR:
+            case END:
+            case ELSE:
+            case UNTIL:
+                break;
+            default:
+                showError();
+                break;
+        }
+    }
+
+    // factor-a ::= factor | "!" factor | "-" factor
+    private void factorA() {
         System.out.println("factorA");
         switch (current.type) {
+            case NAME:
+            case OPEN_PAR:
+            case INT_NUMBER:
+            case REAL_NUMBER:
+                factor();
+                break;
             case NOT:
             case SUB:
                 advance();
-                procFactor();
+                factor();
                 break;
             default:
-                procFactor();
+                showError();
                 break;
         }
     }
 
     // factor ::= identifier | constant | "(" expression ")"
-    private void procFactor() {
+    private void factor() {
         System.out.println("factor");
         switch (current.type) {
             case NAME:
                 advance();
                 break;
             case INT_NUMBER:
-                advance();
-                break;
             case REAL_NUMBER:
-                advance();
+                constant();
                 break;
             case OPEN_PAR:
                 advance();
-                procExpr();
+                expr();
                 eat(TokenType.CLOSE_PAR);
                 break;
             default:
-                throw new RuntimeException("Erro de sintaxe");
+                showError();
+                break;
+        }
+    }
+
+    // addop ::= ADD |  SUB | OR
+    private void addop() {
+        System.out.println("addop");
+        switch (current.type) {
+            case ADD:
+            case SUB:
+            case OR:
+                advance();
+                break;
+            default:
+                showError();
+                break;
+        }
+    }
+
+    // relop ::= EQUAL | GREATER_THAN | LOWER_THAN | LOWER_EQUAL | GREATER_EQUAL | NOT_EQUAL
+    private void relop() {
+        System.out.println("relop");
+        switch (current.type) {
+            case EQUAL:
+            case GREATER_THAN:
+            case GREATER_EQUAL:
+            case LOWER_THAN:
+            case LOWER_EQUAL:
+            case NOT_EQUAL:
+                advance();
+                break;
+            default:
+                showError();
+                break;
+        }
+    }
+
+    // mulop ::= MUL | DIV | AND
+    private void mulop() {
+        System.out.println("mulop");
+        switch (current.type) {
+            case MUL:
+            case DIV:
+            case AND:
+                advance();
+                break;
+            default:
+                showError();
+                break;
+        }
+    }
+
+    // constant ::= INTEGER | REAL
+    private void constant() {
+        System.out.println("constant");
+        switch (current.type) {
+            case INT_NUMBER:
+            case REAL_NUMBER:
+                advance();
+                break;
+            default:
+                showError();
+                break;
         }
     }
 }
