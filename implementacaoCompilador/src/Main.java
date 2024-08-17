@@ -15,6 +15,7 @@ public class Main {
         try (LexicalAnalysis lexical = new LexicalAnalysis("testes/" + fileName)) {
             SyntaticAnalysis syntatic = new SyntaticAnalysis(lexical);
             syntatic.start();
+            System.out.println("Análise léxica e sintática realizada com sucesso!");   
 
             // Lexeme lex;
             // do {
@@ -35,8 +36,8 @@ public class Main {
             // }
 
         } 
-        // catch (Exception e) {
-        //     System.err.println("Erro: " + e.getMessage());
-        // }
+        catch (Exception e) {
+            System.err.println("Erro: " + e.getMessage());
+        }
     }
 }

@@ -1,7 +1,7 @@
 app teste7
 var
   integer x, y;
-  real z;
+  real z
 init
   % Leia dois números inteiros e um número real
   read(x);
@@ -14,16 +14,16 @@ init
 
   % Verifique se a soma é maior que o produto
   if (x > y) then
-    write({Soma é maior que produto});
+    write({Soma é maior que produto})
   else
-    write({Produto é maior ou igual a soma});
+    write({Produto é maior ou igual a soma})
   end;
 
   % Operações lógicas
   if ((x > 0) && (y > 0)) then
-    write({Ambos positivos});
+    write({Ambos positivos})
   else
-    write({Um ou ambos negativos});
-  end;
+    write({Um ou ambos negativos})
+  end
 
 return

@@ -1,10 +1,5 @@
 package syntatic;
 
-// import java.util.ArrayList;
-// import java.util.HashMap;
-// import java.util.List;
-// import java.util.Map;
-
 import lexical.Lexeme;
 import lexical.LexicalAnalysis;
 import lexical.TokenType;
@@ -13,12 +8,10 @@ public class SyntaticAnalysis {
 
     private LexicalAnalysis lex;
     private Lexeme current;
-    // private Map<String,Variable> memory;
 
     public SyntaticAnalysis(LexicalAnalysis lex) {
         this.lex = lex;
         this.current = lex.nextToken();
-        // memory = new HashMap<String,Variable>();
     }
 
     public void start() {
@@ -27,14 +20,14 @@ public class SyntaticAnalysis {
     }
 
     private void advance() {
-        System.out.println("Advanced (\"" + current.token + "\", " +
-            current.type + ")");
+        // System.out.println("Advanced (\"" + current.token + "\", " +
+        //     current.type + ")");
         current = lex.nextToken();
     }
 
     private void eat(TokenType type) {
-        System.out.println("Expected (..., " + type + "), found (\"" + 
-            current.token + "\", " + current.type + ")");
+        // System.out.println("Expected (..., " + type + "), found (\"" + 
+        //     current.token + "\", " + current.type + ")");
         if (type == current.type) {
             current = lex.nextToken();
         } else {
@@ -63,7 +56,7 @@ public class SyntaticAnalysis {
 
     // program ::= app identifier body
     private void program() {
-        System.out.println("program");
+        // System.out.println("program");
         eat(TokenType.APP);
         eat(TokenType.NAME);
         body();
@@ -71,7 +64,7 @@ public class SyntaticAnalysis {
 
     // body ::= var decl-list init stmt-list return | init stmt-list return 
     private void body() {
-        System.out.println("body");
+        // System.out.println("body");
         if (current.type == TokenType.VAR) {
             advance();
             declList();
@@ -83,14 +76,14 @@ public class SyntaticAnalysis {
 
     // decl-list ::= decl decl-tail
     private void declList() {
-        System.out.println("decl-list");
+        // System.out.println("decl-list");
         decl();
         declTail();
     }
 
     // decl-tail ::= “;” decl decl-tail | lambda 
     private void declTail() {
-        System.out.println("decl-tail");
+        // System.out.println("decl-tail");
         switch (current.type) {
             case SEMICOLON:
                 advance();
@@ -107,21 +100,21 @@ public class SyntaticAnalysis {
 
     // decl ::= type ident-list
     private void decl() {
-        System.out.println("decl");
+        // System.out.println("decl");
         type();
         identList();
     }
 
     // ident-list ::= identifier ident-tail 
     private void identList() {
-        System.out.println("ident-list");
+        // System.out.println("ident-list");
         eat(TokenType.NAME);
         identTail();
     }
 
     // ident-tail ::= "," identifier ident-tail | lambda 
     private void identTail() {
-        System.out.println("ident-tail");
+        // System.out.println("ident-tail");
         switch (current.type) {
             case COMMA:
                 advance();
@@ -139,7 +132,7 @@ public class SyntaticAnalysis {
 
     // type ::= integer | real
     private void type() {
-        System.out.println("type");
+        // System.out.println("type");
         switch (current.type) {
             case INTEGER:
             case REAL:
@@ -152,14 +145,14 @@ public class SyntaticAnalysis {
 
     // stmt-list ::= stmt stmt-tail
     private void stmtList() {
-        System.out.println("stmt-list");
+        // System.out.println("stmt-list");
         stmt();
         stmtTail();
     }
 
     // stmt-tail ::= ";" stmt stmt-tail | lambda 
     private void stmtTail() {
-        System.out.println("stmtTail");
+        // System.out.println("stmtTail");
         switch (current.type) {
             case SEMICOLON:
                 advance();
@@ -179,7 +172,8 @@ public class SyntaticAnalysis {
 
     // stmt ::= assign-stmt | if-stmt | repeat-stmt | read-stmt | write-stmt
     private void stmt() {
-        System.out.println("stmt");
+        // System.out.println("stmt");
+
         switch (current.type) {
             case NAME:
                 assignStmt();
@@ -204,7 +198,7 @@ public class SyntaticAnalysis {
 
     // assign-stmt ::= identifier ":=" simple_expr
     private void assignStmt() {
-        System.out.println("assign-stmt");
+        // System.out.println("assign-stmt");
         eat(TokenType.NAME);
         eat(TokenType.ASSIGN);
         simpleExpr();
@@ -212,7 +206,7 @@ public class SyntaticAnalysis {
 
     // if-stmt ::= if condition then stmt-list if-tail
     private void ifStmt() {
-        System.out.println("if-stmt");
+        // System.out.println("if-stmt");
         eat(TokenType.IF);
         condition();
         eat(TokenType.THEN);
@@ -222,7 +216,7 @@ public class SyntaticAnalysis {
 
     // if-tail ::= end | else stmt-list end
     private void ifTail() {
-        System.out.println("if-tail");
+        // System.out.println("if-tail");
         if (current.type == TokenType.ELSE) {
             advance();
             stmtList();
@@ -232,7 +226,7 @@ public class SyntaticAnalysis {
 
     // repeat-stmt ::= repeat stmt-list stmt-suffix
     private void repeatStmt() {
-        System.out.println("repeat-stmt");
+        // System.out.println("repeat-stmt");
         eat(TokenType.REPEAT);
         stmtList();
         stmtSuffix();
@@ -240,14 +234,14 @@ public class SyntaticAnalysis {
 
     // stmt-suffix ::= until condition
     private void stmtSuffix() {
-        System.out.println("stmt-suffix");
+        // System.out.println("stmt-suffix");
         eat(TokenType.UNTIL);
         condition();
     }
 
     // read-stmt ::= read "(" identifier ")"
     private void readStmt() {
-        System.out.println("rrad-stmt");
+        // System.out.println("rrad-stmt");
         eat(TokenType.READ);
         eat(TokenType.OPEN_PAR);
         eat(TokenType.NAME);
@@ -256,7 +250,7 @@ public class SyntaticAnalysis {
 
     // write-stmt ::= write "(" writable ")"
     private void writeStmt() {
-        System.out.println("write-stmt");
+        // System.out.println("write-stmt");
         eat(TokenType.WRITE);
         eat(TokenType.OPEN_PAR);
         writable();
@@ -265,7 +259,7 @@ public class SyntaticAnalysis {
 
     // writable ::= simple-expr | literal
     private void writable() {
-        System.out.println("writable");
+        // System.out.println("writable");
         switch (current.type) {
             case NAME:
             case INT_NUMBER:
@@ -286,20 +280,20 @@ public class SyntaticAnalysis {
 
     // condition ::= expression
     private void condition() {
-        System.out.println("proCondition");
+        // System.out.println("proCondition");
         expr();
     }
 
     // expression ::= simple-expr expr-tail
     private void expr() {
-        System.out.println("expression");
+        // System.out.println("expression");
         simpleExpr();
         exprTail();
     }
 
     // expr-tail ::= relop simple-expr | lambda 
     private void exprTail() {
-        System.out.println("exprTail");
+        // System.out.println("exprTail");
         switch (current.type) {
             case EQUAL:
             case GREATER_THAN:
@@ -329,7 +323,7 @@ public class SyntaticAnalysis {
 
     // simple-expr ::= term simple
     private void simpleExpr() {
-        System.out.println("simpleExpr");
+        // System.out.println("simpleExpr");
         switch (current.type) {
             case NAME:
             case INT_NUMBER:
@@ -348,7 +342,7 @@ public class SyntaticAnalysis {
 
     // simple ::= addop term simple | lambda
     private void simple() {
-        System.out.println("simple");
+        // System.out.println("simple");
         switch (current.type) {
             case ADD:
             case SUB:
@@ -379,7 +373,7 @@ public class SyntaticAnalysis {
 
     // term ::= factor-a term-tail
     private void term() {
-        System.out.println("term");
+        // System.out.println("term");
         switch (current.type) {
             case NOT:
             case SUB:
@@ -398,7 +392,7 @@ public class SyntaticAnalysis {
 
     // term-tail ::= mulop factor-a term-tail | lambda
     private void termTail() {
-        System.out.println("termTail");
+        // System.out.println("termTail");
         switch (current.type) {
             case MUL:
             case DIV:
@@ -432,7 +426,7 @@ public class SyntaticAnalysis {
 
     // factor-a ::= factor | "!" factor | "-" factor
     private void factorA() {
-        System.out.println("factorA");
+        // System.out.println("factorA");
         switch (current.type) {
             case NAME:
             case OPEN_PAR:
@@ -453,7 +447,7 @@ public class SyntaticAnalysis {
 
     // factor ::= identifier | constant | "(" expression ")"
     private void factor() {
-        System.out.println("factor");
+        // System.out.println("factor");
         switch (current.type) {
             case NAME:
                 advance();
@@ -475,7 +469,7 @@ public class SyntaticAnalysis {
 
     // addop ::= ADD |  SUB | OR
     private void addop() {
-        System.out.println("addop");
+        // System.out.println("addop");
         switch (current.type) {
             case ADD:
             case SUB:
@@ -490,7 +484,7 @@ public class SyntaticAnalysis {
 
     // relop ::= EQUAL | GREATER_THAN | LOWER_THAN | LOWER_EQUAL | GREATER_EQUAL | NOT_EQUAL
     private void relop() {
-        System.out.println("relop");
+        // System.out.println("relop");
         switch (current.type) {
             case EQUAL:
             case GREATER_THAN:
@@ -508,7 +502,7 @@ public class SyntaticAnalysis {
 
     // mulop ::= MUL | DIV | AND
     private void mulop() {
-        System.out.println("mulop");
+        // System.out.println("mulop");
         switch (current.type) {
             case MUL:
             case DIV:
@@ -523,7 +517,7 @@ public class SyntaticAnalysis {
 
     // constant ::= INTEGER | REAL
     private void constant() {
-        System.out.println("constant");
+        // System.out.println("constant");
         switch (current.type) {
             case INT_NUMBER:
             case REAL_NUMBER:
