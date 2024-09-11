@@ -3,15 +3,19 @@ package syntatic;
 import lexical.Lexeme;
 import lexical.LexicalAnalysis;
 import lexical.TokenType;
+import semantic.SemanticAnalysis;
+import semantic.IdType;
 
 public class SyntaticAnalysis {
 
     private LexicalAnalysis lex;
+    private SemanticAnalysis s;
     private Lexeme current;
 
     public SyntaticAnalysis(LexicalAnalysis lex) {
         this.lex = lex;
         this.current = lex.nextToken();
+        this.s = new SemanticAnalysis();
     }
 
     public void start() {
@@ -58,6 +62,7 @@ public class SyntaticAnalysis {
     private void program() {
         // System.out.println("program");
         eat(TokenType.APP);
+        s.addVariable(current.token, IdType.APP);
         eat(TokenType.NAME);
         body();
     }
@@ -101,25 +106,27 @@ public class SyntaticAnalysis {
     // decl ::= type ident-list
     private void decl() {
         // System.out.println("decl");
-        type();
-        identList();
+        IdType idType = type();
+        identList(idType);
     }
 
     // ident-list ::= identifier ident-tail 
-    private void identList() {
+    private void identList(IdType idType) {
         // System.out.println("ident-list");
+        s.addVariable(current.token, idType);
         eat(TokenType.NAME);
-        identTail();
+        identTail(idType);
     }
 
     // ident-tail ::= "," identifier ident-tail | lambda 
-    private void identTail() {
+    private void identTail(IdType idType) {
         // System.out.println("ident-tail");
         switch (current.type) {
             case COMMA:
                 advance();
+                s.addVariable(current.token, idType);
                 eat(TokenType.NAME);
-                identTail();
+                identTail(idType);
                 break;
             case INIT:
             case SEMICOLON:
@@ -131,15 +138,18 @@ public class SyntaticAnalysis {
     }
 
     // type ::= integer | real
-    private void type() {
+    private IdType type() {
         // System.out.println("type");
         switch (current.type) {
             case INTEGER:
+                advance();
+                return IdType.INT_NUMBER;
             case REAL:
                 advance();
-                break;
+                return IdType.REAL_NUMBER;
             default:
                 showError();
+                return null;
         }
     }
 
@@ -199,15 +209,21 @@ public class SyntaticAnalysis {
     // assign-stmt ::= identifier ":=" simple_expr
     private void assignStmt() {
         // System.out.println("assign-stmt");
+        String identifier = current.token;
         eat(TokenType.NAME);
         eat(TokenType.ASSIGN);
-        simpleExpr();
+        IdType type = simpleExpr();
+        s.checkVariableDeclared(identifier);
+        System.out.println(identifier + " " + type);
+        s.checkAssignment(identifier, type);
     }
 
     // if-stmt ::= if condition then stmt-list if-tail
     private void ifStmt() {
         // System.out.println("if-stmt");
         eat(TokenType.IF);
+        IdType conditionType = condition();
+        s.isBooleanCondition(conditionType);
         condition();
         eat(TokenType.THEN);
         stmtList();
@@ -236,7 +252,8 @@ public class SyntaticAnalysis {
     private void stmtSuffix() {
         // System.out.println("stmt-suffix");
         eat(TokenType.UNTIL);
-        condition();
+        IdType conditionType = condition();
+        s.isBooleanCondition(conditionType);
     }
 
     // read-stmt ::= read "(" identifier ")"
@@ -279,20 +296,22 @@ public class SyntaticAnalysis {
     }
 
     // condition ::= expression
-    private void condition() {
+    private IdType  condition() {
         // System.out.println("proCondition");
-        expr();
+        return expr();
     }
 
     // expression ::= simple-expr expr-tail
-    private void expr() {
+    private IdType expr() {
         // System.out.println("expression");
-        simpleExpr();
-        exprTail();
+        IdType lexpr = simpleExpr();
+        IdType aux = exprTail(lexpr);
+        
+        return aux != null ? aux : lexpr;
     }
 
     // expr-tail ::= relop simple-expr | lambda 
-    private void exprTail() {
+    private IdType exprTail(IdType lexpr) {
         // System.out.println("exprTail");
         switch (current.type) {
             case EQUAL:
@@ -302,8 +321,9 @@ public class SyntaticAnalysis {
             case LOWER_EQUAL:
             case NOT_EQUAL:
                 relop();
-                simpleExpr();
-                break;
+                IdType rexpr = simpleExpr();
+                try {lexpr = s.checkComparisonOperation(lexpr, rexpr);} catch (Exception e) {System.out.println("exprTail");}
+                return lexpr;
             case CLOSE_PAR:
             case THEN:
             case RETURN:
@@ -314,15 +334,15 @@ public class SyntaticAnalysis {
             case END:
             case ELSE:
             case UNTIL:
-                break;
+                return null;
             default:
                 showError();
-                break;
+                return null;
         }
     }
 
     // simple-expr ::= term simple
-    private void simpleExpr() {
+    private IdType simpleExpr() {
         // System.out.println("simpleExpr");
         switch (current.type) {
             case NAME:
@@ -331,26 +351,29 @@ public class SyntaticAnalysis {
             case OPEN_PAR:
             case NOT:
             case SUB:
-                term();
-                simple();
-                break;
+                IdType lexpr = term();
+                IdType aux = simple(lexpr);
+                return aux != null ? aux : lexpr;
             default:
                 showError();
-                break;
+                return null;
         }
     }
 
     // simple ::= addop term simple | lambda
-    private void simple() {
+    private IdType simple(IdType lexpr) {
         // System.out.println("simple");
         switch (current.type) {
             case ADD:
             case SUB:
             case OR:
+                TokenType op = current.type;
                 addop();
-                term();
-                simple();
-                break;
+                IdType rexpr = term();
+                System.out.println(lexpr + " " + rexpr + " " + op);
+                try {lexpr = s.checkArithmeticOrLogicalOperation(lexpr, rexpr, op);} catch (Exception e) {System.out.println("simple ");}
+                IdType aux = simple(lexpr);
+                return aux != null ? aux : lexpr;
             case CLOSE_PAR:
             case THEN:
             case RETURN:
@@ -364,15 +387,15 @@ public class SyntaticAnalysis {
             case END:
             case ELSE:
             case UNTIL:
-                break;
+                return null;
             default:
                 showError();
-                break;
+                return null;
         }
     }
 
     // term ::= factor-a term-tail
-    private void term() {
+    private IdType term() {
         // System.out.println("term");
         switch (current.type) {
             case NOT:
@@ -381,26 +404,28 @@ public class SyntaticAnalysis {
             case OPEN_PAR:
             case INT_NUMBER:
             case REAL_NUMBER:
-                factorA();
-                termTail();
-                break;
+                IdType lexpr = factorA();
+                IdType aux = termTail(lexpr);
+                return aux != null ? aux : lexpr;
             default:
                 showError();
-                break;
+                return null;
         }
     }
 
     // term-tail ::= mulop factor-a term-tail | lambda
-    private void termTail() {
+    private IdType termTail(IdType lexpr) {
         // System.out.println("termTail");
         switch (current.type) {
             case MUL:
             case DIV:
             case AND:
+                TokenType op = current.type;
                 mulop();
-                factorA();
-                termTail();
-                break;
+                IdType rexpr = factorA();
+                lexpr = s.checkArithmeticOrLogicalOperation(lexpr, rexpr, op);
+                IdType aux = termTail(lexpr);
+                return aux != null ? aux : lexpr;
             case CLOSE_PAR:
             case THEN:
             case RETURN:
@@ -417,53 +442,66 @@ public class SyntaticAnalysis {
             case END:
             case ELSE:
             case UNTIL:
-                break;
+                return null;
             default:
                 showError();
-                break;
+                return null;
         }
     }
 
     // factor-a ::= factor | "!" factor | "-" factor
-    private void factorA() {
+    private IdType factorA() {
         // System.out.println("factorA");
+        IdType type;
         switch (current.type) {
             case NAME:
             case OPEN_PAR:
             case INT_NUMBER:
             case REAL_NUMBER:
-                factor();
-                break;
+                type = factor();
+                return type;
             case NOT:
+                advance();
+                type = factor();
+                s.isBooleanCondition(type);
+                return type;
             case SUB:
                 advance();
-                factor();
-                break;
+                type = factor();
+                s.checkUnaryArithmeticOperation(type);
+                return type;
             default:
                 showError();
-                break;
+                return null;
         }
     }
 
     // factor ::= identifier | constant | "(" expression ")"
-    private void factor() {
+    private IdType factor() {
         // System.out.println("factor");
+        IdType type;
         switch (current.type) {
             case NAME:
+                String id = current.token;
                 advance();
-                break;
+                type = s.getVariable(id).type;
+                return type;
             case INT_NUMBER:
+                constant();
+                type = IdType.INT_NUMBER;
+                return type;
             case REAL_NUMBER:
                 constant();
-                break;
+                type = IdType.REAL_NUMBER;
+                return type;
             case OPEN_PAR:
                 advance();
-                expr();
+                type = expr();
                 eat(TokenType.CLOSE_PAR);
-                break;
+                return type;
             default:
                 showError();
-                break;
+                return null;
         }
     }
 
