@@ -1,11 +1,11 @@
 package semantic;
 
 public class Var {
-    public final String name;
-    public final IdType type;
+    public String id;
+    public IdType type;
 
-    public Var (String name, IdType type) {
-        this.name = name;
+    public Var (String id, IdType type) {
+        this.id = id;
         this.type = type;
     }
 }

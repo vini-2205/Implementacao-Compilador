@@ -1,8 +1,8 @@
 package semantic;
 
 public enum IdType {
-    INT_NUMBER,
-    REAL_NUMBER,
+    APP,
     BOOLEAN,
-    APP
+    INT_NUMBER,
+    REAL_NUMBER
 }

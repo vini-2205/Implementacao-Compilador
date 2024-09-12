@@ -4,6 +4,7 @@ import lexical.Lexeme;
 import lexical.LexicalAnalysis;
 import lexical.TokenType;
 import semantic.SemanticAnalysis;
+import semantic.SemanticException;
 import semantic.IdType;
 
 public class SyntaticAnalysis {
@@ -58,11 +59,21 @@ public class SyntaticAnalysis {
         System.exit(1);
     }
 
+    private void showError(String msg) {
+        System.out.printf("%02d: " + msg, lex.getLine());
+
+        System.exit(1);
+    }
+
     // program ::= app identifier body
     private void program() {
         // System.out.println("program");
         eat(TokenType.APP);
-        s.addVariable(current.token, IdType.APP);
+        try {
+            s.addVar(current.token, IdType.APP);
+        } catch (SemanticException e) {
+            showError(e.getMessage());
+        }
         eat(TokenType.NAME);
         body();
     }
@@ -113,7 +124,11 @@ public class SyntaticAnalysis {
     // ident-list ::= identifier ident-tail 
     private void identList(IdType idType) {
         // System.out.println("ident-list");
-        s.addVariable(current.token, idType);
+        try {
+            s.addVar(current.token, idType);
+        } catch (SemanticException e) {
+            showError(e.getMessage());
+        }
         eat(TokenType.NAME);
         identTail(idType);
     }
@@ -124,7 +139,13 @@ public class SyntaticAnalysis {
         switch (current.type) {
             case COMMA:
                 advance();
-                s.addVariable(current.token, idType);
+
+                try {
+                    s.addVar(current.token, idType);
+                } catch (SemanticException e) {
+                    showError(e.getMessage());
+                }
+
                 eat(TokenType.NAME);
                 identTail(idType);
                 break;
@@ -213,9 +234,20 @@ public class SyntaticAnalysis {
         eat(TokenType.NAME);
         eat(TokenType.ASSIGN);
         IdType type = simpleExpr();
-        s.checkVariableDeclared(identifier);
+
+        try {
+            s.checkDeclaration(identifier);
+        } catch (SemanticException e) {
+            showError(e.getMessage());
+        }
+
         System.out.println(identifier + " " + type);
-        s.checkAssignment(identifier, type);
+
+        try {
+            s.checkHasAssign(identifier, type);
+        } catch (SemanticException e) {
+            showError(e.getMessage());
+        }
     }
 
     // if-stmt ::= if condition then stmt-list if-tail
@@ -223,7 +255,13 @@ public class SyntaticAnalysis {
         // System.out.println("if-stmt");
         eat(TokenType.IF);
         IdType conditionType = condition();
-        s.isBooleanCondition(conditionType);
+
+        try {
+            s.isBoolean(conditionType);
+        } catch (SemanticException e) {
+            showError(e.getMessage());
+        }
+
         condition();
         eat(TokenType.THEN);
         stmtList();
@@ -253,7 +291,12 @@ public class SyntaticAnalysis {
         // System.out.println("stmt-suffix");
         eat(TokenType.UNTIL);
         IdType conditionType = condition();
-        s.isBooleanCondition(conditionType);
+
+        try {
+            s.isBoolean(conditionType);
+        } catch (SemanticException e) {
+            showError(e.getMessage());
+        }
     }
 
     // read-stmt ::= read "(" identifier ")"
@@ -322,7 +365,7 @@ public class SyntaticAnalysis {
             case NOT_EQUAL:
                 relop();
                 IdType rexpr = simpleExpr();
-                try {lexpr = s.checkComparisonOperation(lexpr, rexpr);} catch (Exception e) {System.out.println("exprTail");}
+                try {lexpr = s.checkCompOp(lexpr, rexpr);} catch (Exception e) {System.out.println("exprTail");}
                 return lexpr;
             case CLOSE_PAR:
             case THEN:
@@ -371,7 +414,7 @@ public class SyntaticAnalysis {
                 addop();
                 IdType rexpr = term();
                 System.out.println(lexpr + " " + rexpr + " " + op);
-                try {lexpr = s.checkArithmeticOrLogicalOperation(lexpr, rexpr, op);} catch (Exception e) {System.out.println("simple ");}
+                try {lexpr = s.checkOp(lexpr, rexpr, op);} catch (Exception e) {System.out.println("simple ");}
                 IdType aux = simple(lexpr);
                 return aux != null ? aux : lexpr;
             case CLOSE_PAR:
@@ -423,7 +466,13 @@ public class SyntaticAnalysis {
                 TokenType op = current.type;
                 mulop();
                 IdType rexpr = factorA();
-                lexpr = s.checkArithmeticOrLogicalOperation(lexpr, rexpr, op);
+
+                try {
+                    lexpr = s.checkOp(lexpr, rexpr, op);
+                } catch (SemanticException e) {
+                    showError(e.getMessage());
+                }
+
                 IdType aux = termTail(lexpr);
                 return aux != null ? aux : lexpr;
             case CLOSE_PAR:
@@ -463,12 +512,24 @@ public class SyntaticAnalysis {
             case NOT:
                 advance();
                 type = factor();
-                s.isBooleanCondition(type);
+
+                try {
+                    s.isBoolean(type);
+                } catch (SemanticException e) {
+                    showError(e.getMessage());
+                }
+
                 return type;
             case SUB:
                 advance();
                 type = factor();
-                s.checkUnaryArithmeticOperation(type);
+
+                try {
+                    s.checkUnaryOp(type);
+                } catch (SemanticException e) {
+                    showError(e.getMessage());
+                }
+
                 return type;
             default:
                 showError();
@@ -479,12 +540,18 @@ public class SyntaticAnalysis {
     // factor ::= identifier | constant | "(" expression ")"
     private IdType factor() {
         // System.out.println("factor");
-        IdType type;
+        IdType type = null;
         switch (current.type) {
             case NAME:
                 String id = current.token;
                 advance();
-                type = s.getVariable(id).type;
+
+                try {
+                    type = s.getVar(id).type;
+                } catch (SemanticException e) {
+                    showError(e.getMessage());
+                }
+
                 return type;
             case INT_NUMBER:
                 constant();
