@@ -241,7 +241,7 @@ public class SyntaticAnalysis {
             showError(e.getMessage());
         }
 
-        System.out.println(identifier + " " + type);
+        //System.out.println(identifier + " " + type);
 
         try {
             s.checkHasAssign(identifier, type);
@@ -262,7 +262,6 @@ public class SyntaticAnalysis {
             showError(e.getMessage());
         }
 
-        condition();
         eat(TokenType.THEN);
         stmtList();
         ifTail();
@@ -365,7 +364,11 @@ public class SyntaticAnalysis {
             case NOT_EQUAL:
                 relop();
                 IdType rexpr = simpleExpr();
-                try {lexpr = s.checkCompOp(lexpr, rexpr);} catch (Exception e) {System.out.println("exprTail");}
+                try {
+                    lexpr = s.checkCompOp(lexpr, rexpr);
+                } catch (SemanticException e) {
+                    showError(e.getMessage());
+                }
                 return lexpr;
             case CLOSE_PAR:
             case THEN:
@@ -413,8 +416,12 @@ public class SyntaticAnalysis {
                 TokenType op = current.type;
                 addop();
                 IdType rexpr = term();
-                System.out.println(lexpr + " " + rexpr + " " + op);
-                try {lexpr = s.checkOp(lexpr, rexpr, op);} catch (Exception e) {System.out.println("simple ");}
+                //System.out.println(lexpr + " " + rexpr + " " + op);
+                try {
+                    lexpr = s.checkOp(lexpr, rexpr, op);
+                } catch (SemanticException e) {
+                    showError(e.getMessage());
+                }
                 IdType aux = simple(lexpr);
                 return aux != null ? aux : lexpr;
             case CLOSE_PAR:
@@ -545,7 +552,7 @@ public class SyntaticAnalysis {
             case NAME:
                 String id = current.token;
                 advance();
-
+            
                 try {
                     type = s.getVar(id).type;
                 } catch (SemanticException e) {

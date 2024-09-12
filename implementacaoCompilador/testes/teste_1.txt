@@ -1,7 +1,7 @@
 app teste1
 var
- integer a, b, c;
- real result
+ integer c, auxiliar;
+ real a, result, b
 init
  read (a);
  read (c);
@@ -9,5 +9,5 @@ init
  result := (a + b);
  write(result);
  a := result;
- teste1 := 1
+ auxiliar := 1
 return

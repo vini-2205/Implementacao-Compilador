@@ -37,7 +37,7 @@ public class SemanticAnalysis {
     public void checkHasAssign(String token, IdType type) throws SemanticException {
         Var variable = getVar(token);
         if (variable.type.equals(IdType.APP)) {
-            throw new SemanticException("O nome da aplicação não pode ser atribuído a uma variável");
+            throw new SemanticException("O nome da aplicação não é uma variável");
         }
         if (variable.type.equals(IdType.REAL_NUMBER) && type.equals(IdType.INT_NUMBER)) {
             return;
@@ -48,15 +48,18 @@ public class SemanticAnalysis {
     }
 
     public IdType checkOp(IdType leftType, IdType rightType, TokenType op) throws SemanticException {
-        if (op.equals(TokenType.OR)) {
+        if (Arrays.asList(TokenType.OR, TokenType.AND, TokenType.NOT_EQUAL, TokenType.GREATER_EQUAL, TokenType.LOWER_EQUAL, TokenType.GREATER_THAN, TokenType.LOWER_THAN).contains(op)) {
             if (leftType.equals(IdType.BOOLEAN) && rightType.equals(IdType.BOOLEAN)) {
                 return IdType.BOOLEAN;
             } else {
                 throw new SemanticException("Tipo da variável não corresponde ao tipo da expressão");
             }
-        } else if (Arrays.asList(TokenType.ADD, TokenType.SUB).contains(op)) {
+        } else if (Arrays.asList(TokenType.ADD, TokenType.SUB, TokenType.MUL, TokenType.DIV).contains(op)) {
             if (leftType.equals(IdType.APP) || rightType.equals(IdType.APP)) {
                 throw new SemanticException("O nome da aplicação não pode ser utilizado em uma operação aritmética");
+            }
+            if (op == TokenType.DIV) {
+                return IdType.REAL_NUMBER;
             }
             if (leftType.equals(IdType.REAL_NUMBER) || rightType.equals(IdType.REAL_NUMBER)) {
                 return IdType.REAL_NUMBER;
@@ -104,6 +107,10 @@ public class SemanticAnalysis {
     }
 
     public Var getVar(String token) throws SemanticException {
+        if (!hasDeclartion(token)) {
+            throw new SemanticException("Variável não declarada");
+        }
+
         return vars.get(token);
     }
 }

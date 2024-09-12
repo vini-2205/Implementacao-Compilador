@@ -1,6 +1,7 @@
 app Teste5
  var
  integer j, k;
+ integer res;
  real result
 
  init

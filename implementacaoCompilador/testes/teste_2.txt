@@ -1,7 +1,7 @@
 app test2
 var
  integer a;
- integer b;
+ real b;
  real f, _f
 init
  read (a);

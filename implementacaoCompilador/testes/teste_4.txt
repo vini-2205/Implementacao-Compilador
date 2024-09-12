@@ -1,7 +1,7 @@
 app teste4
  var
- integer i, j, k, total, soma, teste4;
- real i, a
+ integer total, soma;
+ real i, a, j, k
 
 init
  read (i);
